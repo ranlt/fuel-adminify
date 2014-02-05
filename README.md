@@ -2,6 +2,9 @@
 We are working hard to release the new final version.
 This Repository includes not all files!
 
+#Admin Theme
+* Sources - https://github.com/Pseudoagentur/Bootstrap-Adminify-Sources
+* HTML only - https://github.com/Pseudoagentur/Bootstrap-Adminify
 
 # Fuel Administrator
 
