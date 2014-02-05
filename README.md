@@ -1,23 +1,48 @@
-#Fuel Depot
+# Attention
+We are working hard to release the new final version.
+This Repository includes not all files!
 
-## Description
 
-Fuel Depot was designed to become the new documentation repository of the FuelPHP project. This repository contains the source code of the Depot application, written in FuelPHP offcourse.
+# Fuel Administrator
 
-It has become obsolete due to the decision to use PHPDocumentor for API documentation, and, for version 2, switch to markdown based documentation with a simple front controller that can be used locally, either with a local webserver or using PHP 5.4's built-in webserver.
+Version 2.0 - FuelPHP 1.7.1
 
-It now serves as an example application, to see what FuelPHP can do. It does not have the most optimal application design, because the main goal was to show how to use as many features as possible.
+## What is Fuel Administrator?
 
-## FuelPHP
+Fuel Administrator is a fuelphp based alternative to the Codeigniter based script Backendpro.
 
-FuelPHP is a fast, lightweight PHP 5.3 framework. In an age where frameworks are a dime a dozen, We believe that FuelPHP will stand out in the crowd.  It will do this by combining all the things you love about the great frameworks out there, while getting rid of the bad.
+Currently it includes only the following features:
 
-##Credits
+* User Management with Roles and Permissions
+* Database Driven Menu Management 
+* Messages (Alert Notifications)
+* Breadcrumb
+* Twitter Bootstrap
+* Admin Interface
+* Ready to use
+* Dynamic Dashboard
 
-* The login, authentication and registration code is based on the [Ninjauth](http://github.com/happyninjas/fuel-ninjauth) package by @philsturgeon.
 
-##Donate
+## Todos
 
-[Donate Here](http://fuelphp.com/contribute/donate)
+* Dynamic User Profile fields management
+* simple Module management 
+* Multilingual support
+* Documentation
+* Simple installer
+* Online Demo
 
-Any donations would help support the framework and pay for software, development and hosting costs. We understand if you cannot, but greatly appreciate anything you can give.
+
+## Installation
+
+soon
+
+
+## Credits
+
+* Dre1080 - Warden - https://github.com/dre1080/warden
+* Phil F - DbMenu - https://github.com/Phil-F/Fuel-DbMenu
+* dbpolito - Breadcrumb - https://github.com/dbpolito/Fuel-Breadcrumb
+* dbpolito - Message - https://github.com/dbpolito/Fuel-Message
+* FuelPHP Team - Framework - https://github.com/fuel
+* FuelPHP Team - Depot - https://github.com/fuel/depot
