@@ -1,0 +1,65 @@
+/* General styles for all menus */
+.cbp-spmenu {
+  background: #41454E;
+  position: fixed;
+  padding-top: 65px;
+}
+
+/* Orientation-dependent styles for the content of the menu */
+
+.cbp-spmenu-vertical {
+  width: 240px;
+  height: 100%;
+  top: 0;
+  z-index: 1000;
+}
+
+/* Vertical menu that slides from the left or right */
+
+.cbp-spmenu-left.cbp-spmenu-open {
+  left: 0px;
+}
+
+.left-navigation-button {
+  display: none;
+}
+
+/* Transitions */
+
+.cbp-spmenu,
+.cbp-spmenu-push {
+  -webkit-transition: all 0.3s ease;
+  -moz-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+@media (max-width: 991px){
+
+  .left-navigation-button {
+    display: block;
+    float: left;
+    margin:10px 10px;
+  }
+
+  .cbp-spmenu-vertical {
+    font-size: 100%;
+    width: 240px;
+  }
+
+  .cbp-spmenu-left {
+    left: -240px;
+  }
+
+  .cbp-spmenu-left,
+  .cbp-spmenu-push-toleft {
+    left: -240px;
+  }
+
+  .cbp-spmenu-right {
+    right: -240px;
+  }
+
+  .cbp-spmenu-push-toright {
+    left: 240px;
+  }
+}
