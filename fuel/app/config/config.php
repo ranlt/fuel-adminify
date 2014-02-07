@@ -24,7 +24,7 @@ return array(
 	 *
 	 * Set this to null to have it automatically detected.
 	 */
-	'base_url'  => 'http://www.webstone.info/fuel-adminify/public/',
+	'base_url'  => null,
 
 	/**
 	 * url_suffix - Any suffix that needs to be added to
@@ -42,7 +42,7 @@ return array(
 	 *
 	 * Set this to 'index.php if you don't use URL rewriting
 	 */
-	'index_file' => 'index.php',
+	'index_file' => false,
 
 	'profiling'  => false,
 
@@ -80,7 +80,7 @@ return array(
 	 */
 	 'language'           => 'en', // Default language
 	 'language_fallback'  => 'en', // Fallback language when file isn't available for default language
-	 'locale'             => 'en_US', // PHP set_locale() setting, null to not set
+	// 'locale'             => 'en_US', // PHP set_locale() setting, null to not set
 
 	/**
 	 * Internal string encoding charset
@@ -275,7 +275,7 @@ return array(
 		 	'email',
 		 	'warden',
 		 	'menu',
-		 	'breadcrumb'
+		 	'breadcrumb',
 		),
 
 		/**
@@ -291,7 +291,7 @@ return array(
 		/**
 		 * Classes to autoload & initialize even when not used
 		 */
-		// 'classes'  => array(),
+		'classes'  => array('session'),
 
 		/**
 		 * Configs to autoload

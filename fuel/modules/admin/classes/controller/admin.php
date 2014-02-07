@@ -52,7 +52,6 @@ class Controller_Admin extends \Controller_Base_Admin
 		return \Theme::instance()
                         ->get_template()
                         ->set('title', 'Admin Dashboard')
-                        
                         ->set(  'content', 
                                 \Theme::instance()->view('admin/dashboard')
                                 ->set('dashboard', $data)

@@ -2,7 +2,7 @@
 
 return array(
 	'auto_initialize' => true,
-	'driver' => 'file',
+	'driver' => 'cookie',
 	'match_ip' => false,
 	'match_ua' => true,
 	'cookie_domain' => '',
@@ -44,7 +44,7 @@ return array(
 	'db' => 
 	array(
 		'cookie_name' => 'fueldid',
-		'database' => null,
+		'database' => NULL,
 		'table' => 'sessions',
 		'gc_probability' => 5,
 	),

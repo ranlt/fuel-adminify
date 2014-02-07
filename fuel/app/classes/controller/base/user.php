@@ -23,7 +23,7 @@ class Controller_Base_User extends Controller_Base_Public
 		if ( ! \Warden::check())
 		{
 			\Messages::error('Access denied. Please login first');
-			\Response::redirect('/users/login');
+			\Response::redirect('login');
 		}
 
 		parent::before();

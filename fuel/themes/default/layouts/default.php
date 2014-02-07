@@ -8,7 +8,7 @@
         <meta name="description" content="">
         <meta name="author" content="">
 
-        <?php echo \Theme::instance()->asset->css('bootstrap.css'); ?>
+        <?php echo \Theme::instance()->asset->css('bootstrap.min.css'); ?>
 
         <style type="text/css">
             body {
@@ -37,7 +37,7 @@
 	<body>
 		
 
-		        <?php echo $partials['navigation']; ?>
+		        <?php //echo $partials['navigation']; ?>
         
         <?php if(isset($partials['subnavigation'])): ?>
             <?php echo $partials['subnavigation']; ?>
@@ -63,8 +63,7 @@
         
         </div>
 
-		<?php echo \Theme::instance()->asset->js('jquery.js'); ?>
-        <?php echo \Theme::instance()->asset->js('bootstrap.js'); ?>
-        <?php echo \Theme::instance()->asset->js('bootstrap-tooltip.js'); ?>
+		<?php echo \Theme::instance()->asset->js('jquery.min.js'); ?>
+        <?php echo \Theme::instance()->asset->js('bootstrap.min.js'); ?>
 	</body>
 </html>

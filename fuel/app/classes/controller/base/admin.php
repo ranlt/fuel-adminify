@@ -73,7 +73,6 @@ class Controller_Base_Admin extends Controller
 		$this->theme->set_partial('page_header', 'partials/page_header')->set('title', ucfirst($request->module));
         $this->theme->set_partial('footer', 'partials/footer');
         $this->theme->set_partial('alert_messages', 'partials/alert_messages');
-
         $user = \Warden::current_user();
         $this->current_user = $user->username;
         View::set_global('current_user', $this->current_user);

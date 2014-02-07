@@ -20,9 +20,16 @@ nbproject/
 /fuel/app/config/crypt.php
 /fuel/app/config/ninjauth.php
 
-/fuel/app/config/development/db.php
-/fuel/app/config/development/migrations.php
-/fuel/app/config/stage/db.php
-/fuel/app/config/stage/migrations.php
-/fuel/app/config/production/db.php
-/fuel/app/config/production/migrations.php
+
+/fuel/app/config/development/*
+
+/fuel/app/config/stage/*
+
+/fuel/app/config/production/*
+
+
+fuel/app/cache/*
+
+fuel/app/logs/*/*/*
+
+fuel/app/cache/*/*/*

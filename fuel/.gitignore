@@ -7,8 +7,8 @@ desktop.ini
 .project
 .settings
 .tmpoj
-fuel/app/logs/*/*/*
-fuel/app/cache/*/*
+fuel/app/logs/*
+fuel/app/cache/*
 build
 nbproject/
 .idea
