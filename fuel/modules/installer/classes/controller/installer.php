@@ -66,11 +66,52 @@ class Controller_Installer extends \Controller_Base_Public {
 
 	public function action_settings() {
 
+        $data['next_step']  = false;
+
+
+        if( \Input::post() ) {
+
+            $val = \Validation::forge();
+            $val->add_field('db_host', 'Database Host', 'required');
+            $val->add_field('db_username', 'Database Username', 'required');
+            $val->add_field('db_password', 'Database Password', 'required');
+            $val->add_field('db_name', 'Database Name', 'required');
+            $val->set_message('required', 'The field :label is required.');
+
+            
+            if ($val->run())
+            {
+                \Config::load('db', 'database');
+                // update some config item
+                \Config::set('database.default.connection.dsn', 'mysql:host='.\Input::post('db_host').';dbname='.\Input::post('db_name'));
+                \Config::set('database.default.connection.username', \Input::post('db_username'));
+                \Config::set('database.default.connection.password', \Input::post('db_password'));
+                // save the updated config group 'foo' (note: it will save everything in that group!)
+                \Config::save('db', 'database');
+                // save the updated config group 'bar' to config file 'custom' in the module 'foo'
+
+                $data['next_step']  = true;
+
+            }
+            else
+            {   
+                $data['next_step']  = false;
+                foreach ($val->error() as $field => $error)
+                {
+                    \Messages::error($error->get_message());
+                    // The field Title is required and must contain a value.
+                }
+                //\Debug::dump($val->error());
+            }
+        }
+
+        //\Debug::dump(\Input::post());
+
         $this->theme->get_partial('navigation', 'partials/navigation')->set('active', 'settings');
         return $this->theme
                 ->get_template()
                 ->set(  'content', 
-                        \Theme::instance()->view('settings')
+                        \Theme::instance()->view('settings', $data)
                     );
 	}
 

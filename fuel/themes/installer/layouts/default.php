@@ -9,6 +9,7 @@
         <meta name="author" content="">
 
         <?php echo \Theme::instance()->asset->css('bootstrap.min.css'); ?>
+        <?php echo \Theme::instance()->asset->css('bootstrap-theme.css'); ?>
 
         
 

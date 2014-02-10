@@ -237,7 +237,7 @@
   background-repeat: repeat-x;
   border-color: #f5e79e;
 }
-.alert-danger {
+.alert-danger, .alert-error {
   background-image: -webkit-linear-gradient(top, #f2dede 0%, #e7c3c3 100%);
   background-image:         linear-gradient(to bottom, #f2dede 0%, #e7c3c3 100%);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#fff2dede', endColorstr='#ffe7c3c3', GradientType=0);
