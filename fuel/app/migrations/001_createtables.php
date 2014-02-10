@@ -10,7 +10,7 @@ class Createtables
 		// create Fuel Depot tables
 
 		// table versions
-		\DBUtil::create_table('versions', array(
+		/*\DBUtil::create_table('versions', array(
 			'id' => array('type' => 'int', 'constraint' => 11, 'auto_increment' => true),
 			'major' => array('type' => 'tinyint', 'constraint' => 2),
 			'minor' => array('type' => 'tinyint', 'constraint' => 2),
@@ -19,10 +19,10 @@ class Createtables
 			'codepath' => array('type' => 'varchar', 'constraint' => 100),
 			'docspath' => array('type' => 'varchar', 'constraint' => 100),
 			'docbloxpath' => array('type' => 'varchar', 'constraint' => 100),
-		), array('id'));
+		), array('id'));*/
 
 		// table docblox
-		\DBUtil::create_table('docblox', array(
+		/*\DBUtil::create_table('docblox', array(
 			'id' => array('type' => 'int', 'constraint' => 11, 'auto_increment' => true),
 			'version_id' => array('type' => 'int', 'constraint' => 11),
 			'package' => array('type' => 'varchar', 'constraint' => 100),
@@ -33,7 +33,7 @@ class Createtables
 			'functions' => array('type' => 'longtext'),
 			'classes' => array('type' => 'longtext'),
 			'constants' => array('type' => 'longtext'),
-		), array('id'));
+		), array('id'));*/
 
 		// create FuelPHP system tables
 
@@ -50,7 +50,7 @@ class Createtables
 		\DBUtil::create_index('sessions', 'previous_id', 'previous_id', 'UNIQUE');
 
 		// table users
-		\DBUtil::create_table('users', array(
+		/*\DBUtil::create_table('users', array(
 			'id' => array('type' => 'int', 'constraint' => 11, 'auto_increment' => true),
 			'username' => array('type' => 'varchar', 'constraint' => 50),
 			'password' => array('type' => 'varchar', 'constraint' => 255),
@@ -61,19 +61,19 @@ class Createtables
 			'profile_fields' => array('type' => 'text'),
 			'created_at' => array('type' => 'int', 'constraint' => 10, 'unsigned' => true),
 		), array('id'));
-		\DBUtil::create_index('users', array('username', 'email'), 'username', 'UNIQUE');
+		\DBUtil::create_index('users', array('username', 'email'), 'username', 'UNIQUE');*/
 	}
 
 
 	function down()
 	{
 		// drop Fuel Depot tables
-		\DBUtil::drop_table('versions');
-		\DBUtil::drop_table('docblox');
+		//\DBUtil::drop_table('versions');
+		//\DBUtil::drop_table('docblox');
 
 		// drop FuelPHP system tables
 		\DBUtil::drop_table('sessions');
-		\DBUtil::drop_table('users');
+		//\DBUtil::drop_table('users');
 	}
 
 }

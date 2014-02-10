@@ -15,7 +15,7 @@ namespace Installer;
 /**
  * Administration dashboard
  */
-class Controller_Installer extends \Controller_Base_Public {
+class Controller_Installer extends \Controller {
 
 	public function before() {
 		parent::before();
@@ -29,6 +29,18 @@ class Controller_Installer extends \Controller_Base_Public {
         $this->theme->get_template()->set('title', 'Installer');
 	}
 
+    public function after($response)
+    {
+        // If no response object was returned by the action,
+        if (empty($response) or  ! $response instanceof Response)
+        {
+            // render the defined template
+            $response = \Response::forge(\Theme::instance()->render());
+        }
+
+        return parent::after($response);
+    }
+
 	/**
 	 * The index action.
 	 *
@@ -37,8 +49,7 @@ class Controller_Installer extends \Controller_Base_Public {
 	 */
 	public function action_index() {
 
-		//check directory permissions
-
+		
         $this->theme->get_partial('navigation', 'partials/navigation')->set('active', 'start');
         return $this->theme
                 ->get_template()
@@ -81,17 +92,45 @@ class Controller_Installer extends \Controller_Base_Public {
             
             if ($val->run())
             {
-                \Config::load('db', 'database');
-                // update some config item
+                //get environment specific database config
+                \Config::load(\FueL::$env.'/db', 'database', true);
+                
+                //set the database information
                 \Config::set('database.default.connection.dsn', 'mysql:host='.\Input::post('db_host').';dbname='.\Input::post('db_name'));
                 \Config::set('database.default.connection.username', \Input::post('db_username'));
                 \Config::set('database.default.connection.password', \Input::post('db_password'));
-                // save the updated config group 'foo' (note: it will save everything in that group!)
-                \Config::save('db', 'database');
-                // save the updated config group 'bar' to config file 'custom' in the module 'foo'
+                
+                // save the database config
+                \Config::save(\FueL::$env.'/db', 'database');
+                
+                //check database connection
+                try {
+                    
+                    \Database_Connection::instance()->connect();
+                    if(!\DBUtil::table_exists('migration')) {
+                        $create = \DBUtil::create_table('migration', array(
+                            
+                            
+                            'type' => array('constraint' => 25, 'type' => 'varchar'),
+                            'name' => array('constraint' => 50, 'type' => 'varchar'),
+                            'migration' => array('constraint' => 100, 'type' => 'varchar'),
+                            
+                        ));
 
-                $data['next_step']  = true;
+                        \Debug::dump($create);
+                    } 
+                    
+                    $data['next_step']  = true;
+                } catch (\Database_Exception $e) {
+                    \Messages::error($e->getMessage());  
 
+
+                }
+
+                /*
+
+                
+                */
             }
             else
             {   
@@ -117,6 +156,23 @@ class Controller_Installer extends \Controller_Base_Public {
 
 	public function action_database() {
 
+
+        //\Debug::dump(\Migrate::latest());
+        $migrations = $this->getMigrationsAvailable();
+        $result = array();
+        //add all found migrations to the database
+        //1. app migrations 
+        //2. package migrations
+        //3. module migrations
+        foreach ($migrations as $type => $components) {
+            foreach ($components as $component => $files) {
+                foreach ($files as $file) {
+                   $migrationArr = explode('_', $file);
+                   $result[] = \Migrate::version($migrationArr[0], $component, $type);
+                }
+            }
+        }
+        \Debug::dump($result);
         $this->theme->get_partial('navigation', 'partials/navigation')->set('active', 'database');
         return $this->theme
                 ->get_template()
@@ -145,6 +201,58 @@ class Controller_Installer extends \Controller_Base_Public {
                     );
 	}
 
+    public function getMigrationsAvailable()
+    {
+        \Config::load('migrations', true);
+
+        $migrations = array();
+
+        // loop through app to find migrations
+        foreach (glob(APPPATH.\Config::get('migrations.folder').'*_*.php') as $migration)
+        {
+            // Convert path to array
+            $migration = str_replace(array('/', '\\'), DS, $migration);
+            $migration = substr($migration, 0, strlen($migration)-4);
+            $migration = explode(DS, substr($migration, strlen(APPPATH)));
+            $fileName = explode('_', $migration[1]);
+            $migrations['app']['default'][] = $migration[1];
+            
+        }
+
+        // loop through packages to find migrations
+        foreach(\Config::get('package_paths') as $packagePath)
+        {
+            foreach (glob($packagePath.'*'.DS.\Config::get('migrations.folder').'*_*.php') as $migration)
+            {
+                // Convert path to array
+                $migration = str_replace(array('/', '\\'), DS, $migration);
+                $migration = substr($migration, 0, strlen($migration)-4);
+                $migration = explode(DS, substr($migration, strlen(APPPATH)+3));
+                $fileName = explode('_', $migration[3]);
+
+                $migrations['package'][$migration[1]][] = $migration[3];
+
+            }
+        }
+
+        // loop through modules to find migrations
+        foreach(\Config::get('module_paths') as $modulePath)
+        {
+            foreach (glob($modulePath.'*'.DS.\Config::get('migrations.folder').'*_*.php') as $migration)
+            {
+                // Convert path to array
+                $migration = str_replace(array('/', '\\'), DS, $migration);
+                $migration = substr($migration, 0, strlen($migration)-4);
+                $migration = explode(DS, substr($migration, strlen(APPPATH)+3));
+                $fileName = explode('_', $migration[3]);
+
+                $migrations['module'][$migration[1]][] = $migration[3];
+                
+            }
+        }
+
+        return $migrations;
+    }
 }
 
 /* End of file admin.php */
