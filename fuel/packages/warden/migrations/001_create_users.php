@@ -1,8 +1,19 @@
 <?php
+/**
+ * Part of Fuel Adminify.
+ *
+ * @package     fuel-adminify
+ * @version     2.0
+ * @author      Marcus Reinhardt - Pseudoagentur
+ * @license     MIT License
+ * @copyright   2014 Pseudoagentur
+ * @link        http://www.pseudoagentur.de
+ * @github      https://github.com/Pseudoagentur/fuel-adminify
+ */
 
 namespace Fuel\Migrations;
 
-class Migrate_users {
+class Create_users {
 
     public function up() {
 
@@ -19,13 +30,18 @@ class Migrate_users {
 	      'updated_at' => array('type' => 'timestamp ON UPDATE CURRENT_TIMESTAMP', 'default' => \DB::expr('CURRENT_TIMESTAMP'))
 	    ));
 
-	    \DBUtil::create_table('users', $fields, array('id'), false, 'InnoDB', 'utf8_unicode_ci');
+	    if(!\DBUtil::table_exists('users')) {
+	    	\DBUtil::create_table('users', $fields, array('id'), false, 'InnoDB', 'utf8_unicode_ci');
 
-	    \DB::query("ALTER TABLE ".\DB::table_prefix('users')."
-	                  ADD UNIQUE index_users_on_email(email),
-	                  ADD UNIQUE index_users_on_username(username)",
-	               \DB::UPDATE)->execute();
+	    	\DB::query("ALTER TABLE ".\DB::table_prefix('users')."
+          		ADD UNIQUE index_users_on_email(email),
+              	ADD UNIQUE index_users_on_username(username)",
+               \DB::UPDATE
+           	)
+	    	->execute();
+		}
 
+		return true;
     }
 
     public function down() {

@@ -1,22 +1,38 @@
 <?php
+/**
+ * Part of Fuel Adminify.
+ *
+ * @package     fuel-adminify
+ * @version     2.0
+ * @author      Marcus Reinhardt - Pseudoagentur
+ * @license     MIT License
+ * @copyright   2014 Pseudoagentur
+ * @link        http://www.pseudoagentur.de
+ * @github      https://github.com/Pseudoagentur/fuel-adminify
+ */
 
 namespace Fuel\Migrations;
 
-class Migrate_features {
+class Create_features {
 
-    public function up() {
+  public function up() {
 
-		\DBUtil::create_table('profiles', array(
+		if(!\DBUtil::table_exists('profiles')) {
+      \DBUtil::create_table('profiles', array(
           'id'   => array('constraint' => 11, 'type' => 'int', 'unsigned' => true, 'auto_increment' => true),
           'user_id' => array('constraint' => 11, 'type' => 'int', 'unsigned' => true)
-      ), array('id'), false, 'InnoDB', 'utf8_unicode_ci');
+        ), 
+        array('id'), false, 'InnoDB', 'utf8_unicode_ci'
+      );
 
       \DB::query("ALTER TABLE ".\DB::table_prefix('profiles')."
-                    ADD KEY index_profiles_on_user_id(user_id),
-                    ADD CONSTRAINT fk_index_profiles_on_user_id
-                        FOREIGN KEY (user_id)
-                        REFERENCES ".\DB::table_prefix('users')." (id) ON DELETE CASCADE",
-                 \DB::UPDATE)->execute();
+        ADD KEY index_profiles_on_user_id(user_id),
+        ADD CONSTRAINT fk_index_profiles_on_user_id
+        FOREIGN KEY (user_id)
+        REFERENCES ".\DB::table_prefix('users')." (id) ON DELETE CASCADE",
+        \DB::UPDATE
+      )
+      ->execute();
 
   		$fields = array(
 	  		'remember_token' => array('constraint' => 60, 'type' => 'varbinary', 'null' => true, 'default' => null),
@@ -36,17 +52,17 @@ class Migrate_features {
 
 	      	'unlock_token' => array('constraint' => 60, 'type' => 'varbinary', 'null' => true, 'default' => \DB::expr('NULL')),
       		'locked_at' => array('type' => 'datetime', 'default' => '0000-00-00 00:00:00')
-		);
+		  );
       	
-      	\DBUtil::add_fields('users', $fields);
+    	\DBUtil::add_fields('users', $fields);
       	
-      	\DBUtil::create_index('users', 'remember_token', 'index_users_on_remember_token', 'unique');
-      	\DBUtil::create_index('users', 'reset_password_token', 'index_users_on_reset_password_token', 'unique');
-      	\DBUtil::create_index('users', 'confirmation_token', 'index_users_on_confirmation_token', 'unique');
-      	\DBUtil::create_index('users', 'unlock_token', 'index_users_on_unlock_token', 'unique');
-
-
+    	\DBUtil::create_index('users', 'remember_token', 'index_users_on_remember_token', 'unique');
+    	\DBUtil::create_index('users', 'reset_password_token', 'index_users_on_reset_password_token', 'unique');
+    	\DBUtil::create_index('users', 'confirmation_token', 'index_users_on_confirmation_token', 'unique');
+    	\DBUtil::create_index('users', 'unlock_token', 'index_users_on_unlock_token', 'unique');
     }
+
+  }
 
     public function down() {
         

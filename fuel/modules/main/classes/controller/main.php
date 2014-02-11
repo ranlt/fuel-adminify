@@ -1,13 +1,15 @@
 <?php
 
 /**
- * The Welcome Controller.
+ * Part of Fuel Adminify.
  *
- * A basic controller example.  Has examples of how to set the
- * response body and status.
- * 
- * @package  app
- * @extends  Controller
+ * @package     fuel-adminify
+ * @version     2.0
+ * @author      Marcus Reinhardt - Pseudoagentur
+ * @license     MIT License
+ * @copyright   2014 Pseudoagentur
+ * @link        http://www.pseudoagentur.de
+ * @github      https://github.com/Pseudoagentur/fuel-adminify
  */
 
 namespace main;

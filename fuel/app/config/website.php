@@ -1,4 +1,5 @@
 <?php
 return array(
-	'website_title' => 'Fuel Administrator',
+	'website_title' => 'Fuel Adminify',
+	'installed' => true,
 );

@@ -1,13 +1,14 @@
 <?php
 /**
- * Part of Fuel Depot.
+ * Part of Fuel Adminify.
  *
- * @package    FuelDepot
- * @version    1.0
- * @author     Fuel Development Team
- * @license    MIT License
- * @copyright  2012 Fuel Development Team
- * @link       http://depot.fuelphp.com
+ * @package     fuel-adminify
+ * @version     2.0
+ * @author      Marcus Reinhardt - Pseudoagentur
+ * @license     MIT License
+ * @copyright   2014 Pseudoagentur
+ * @link        http://www.pseudoagentur.de
+ * @github      https://github.com/Pseudoagentur/fuel-adminify
  */
 
 

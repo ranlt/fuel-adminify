@@ -24,7 +24,15 @@ Currently it includes only the following features:
 * Admin Interface
 * Ready to use
 * Dynamic Dashboard
+* Web Based Installer
+* Web Based Migrations
 
+## Demo (WIP!)
+
+* Frontend:		http://fuel-adminify.pseudoagentur.de/
+* Backend:		http://fuel-adminify.pseudoagentur.de/
+* Username:		adminify
+* Password:		adminify
 
 ## Todos
 
@@ -32,20 +40,29 @@ Currently it includes only the following features:
 * simple Module management 
 * Multilingual support
 * Documentation
-* Simple installer
-* Online Demo
 
 
 ## Installation
 
-soon
+We implement an easy going webinstaller!
+Run after upload http://www.your-host.tld/public/index.php/installer
+
+Don't forgot to delete the installer after installation.
+You can find the installer in the modules directory.
 
 
 ## Credits
 
 * Dre1080 - Warden - https://github.com/dre1080/warden
-* Phil F - DbMenu - https://github.com/Phil-F/Fuel-DbMenu
+* Phil F - Old Menu Package - https://github.com/Phil-F/Fuel-DbMenu
 * dbpolito - Breadcrumb - https://github.com/dbpolito/Fuel-Breadcrumb
 * dbpolito - Message - https://github.com/dbpolito/Fuel-Message
 * FuelPHP Team - Framework - https://github.com/fuel
 * FuelPHP Team - Depot - https://github.com/fuel/depot
+* juriez - Migrations Module - https://github.com/jhuriez/fuel-migration
+* juriez - New Menu Package - https://github.com/jhuriez/fuel-migration
+
+## Social Media
+* Facebook: https://www.facebook.com/pseudoagentur
+* Google+: https://plus.google.com/u/0/b/108022299398192291562/108022299398192291562/posts
+* Twitter: https://twitter.com/pseudoagentur
