@@ -18,6 +18,11 @@
 	margin-right: 0px;
 }
 
+.content {
+	padding-left:15px;
+	padding-right: 20px;
+}
+
 
 .navbar-header {
 	height: 67px;
@@ -220,6 +225,7 @@
 		margin-top: 65px;
 		margin-left: 0px;
 	}
+}
 
 
 

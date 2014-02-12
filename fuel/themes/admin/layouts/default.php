@@ -52,9 +52,10 @@
             <?php echo $partials['page_header']; ?>
             <!-- END partials/page-header.html -->
 
-
-            <?php echo $partials['alert_messages']; ?>
-            <?php echo $content; ?>
+            <div class="content">
+                <?php echo $partials['alert_messages']; ?>
+                <?php echo $content; ?>
+            </div>
         </div>
 
         <!-- START partials/footer.html -->
