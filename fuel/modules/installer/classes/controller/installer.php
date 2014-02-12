@@ -13,10 +13,36 @@
 
 namespace Installer;
 
+use \PHPSecLib\Crypt_AES;
+use \PHPSecLib\Crypt_Hash;
+
+
+
+
 /**
  * Administration dashboard
  */
 class Controller_Installer extends \Controller {
+    /*
+     * Crypto object used to encrypt/decrypt
+     *
+     * @var object
+     */
+    private static $crypter = null;
+
+    /*
+     * Hash object used to generate hashes
+     *
+     * @var object
+     */
+    private static $hasher = null;
+
+    /*
+     * Crypto configuration
+     *
+     * @var array
+     */
+    private static $config = array();
 
 	public function before() {
 		parent::before();
@@ -117,12 +143,50 @@ class Controller_Installer extends \Controller {
                 \Config::set('config.security.token_salt',\Security::generate_token());
                 \Config::load('config', 'config');
                 */
+                /*
                 \Config::load('crypt', 'crypt');
                 \Config::set('crypt.crypto_key',\Security::generate_token());
                 \Config::set('crypt.crypto_iv',\Security::generate_token());
                 \Config::set('crypt.crypto_hmac',\Security::generate_token());
                 \Config::save('crypt', 'crypt');
+                */
                 
+                static::$crypter = new Crypt_AES();
+                static::$hasher = new Crypt_Hash('sha256');
+
+                // load the config
+                \Config::load('crypt', true);
+                static::$config = \Config::get('crypt', array ());
+
+                // generate random crypto keys if we don't have them or they are incorrect length
+                $update = false;
+                foreach(array('crypto_key', 'crypto_iv', 'crypto_hmac') as $key)
+                {
+                    if ( empty(static::$config[$key]) or (strlen(static::$config[$key]) % 4) != 0)
+                    {
+                        $crypto = '';
+                        for ($i = 0; $i < 8; $i++)
+                        {
+                            $crypto .= static::safe_b64encode(pack('n', mt_rand(0, 0xFFFF)));
+                        }
+                        static::$config[$key] = $crypto;
+                        $update = true;
+                    }
+                }
+
+                // update the config if needed
+                if ($update === true)
+                {
+                    // load the file config
+                    \Config::load('file', true);
+                    \Config::save('crypt', static::$config);
+                    chmod(APPPATH.'config'.DS.'crypt.php', \Config::get('file.chmod.files', 0666));        
+                }
+
+                static::$crypter->enableContinuousBuffer();
+
+                static::$hasher->setKey(static::safe_b64decode(static::$config['crypto_hmac']));
+
                 try {
                     //check database connection
                     \Database_Connection::instance()->connect();
@@ -343,6 +407,34 @@ class Controller_Installer extends \Controller {
         }
 
         return $migrations;
+    }
+
+    /**
+     * Part of the Fuel framework.
+     *
+     * @package    Fuel
+     * @version    1.7
+     * @author     Fuel Development Team
+     * @license    MIT License
+     * @copyright  2010 - 2013 Fuel Development Team
+     * @link       http://fuelphp.com
+     */
+    private static function safe_b64encode($value)
+    {
+        $data = base64_encode($value);
+        $data = str_replace(array('+','/','='), array('-','_',''), $data);
+        return $data;
+    }
+
+    private static function safe_b64decode($value)
+    {
+        $data = str_replace(array('-','_'), array('+','/'), $value);
+        $mod4 = strlen($data) % 4;
+        if ($mod4)
+        {
+            $data .= substr('====', $mod4);
+        }
+        return base64_decode($data);
     }
 }
 
