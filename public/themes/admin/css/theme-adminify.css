@@ -24,6 +24,10 @@
 }
 
 
+.tab-content {
+	padding-top: 10px;
+}
+
 .navbar-header {
 	height: 67px;
 	padding-top: 6px;

@@ -76,4 +76,78 @@ class Helper_Menu
         return $themesConf[$theme];
     }
 
+    /**
+     * Return the Lang object of the menu
+     * @param  mixed  $menu         
+     * @param  boolean $language     
+     * @param  boolean $forceCurrent 
+     * @return mixed                
+     */
+    public static function getLang($menu, $language = false, $forceCurrent = false)
+    {
+        // Get default language
+        $language == false and $language = \Config::get('language');
+
+        // Return the current menu lang
+        if ($forceCurrent)
+        {
+            if (is_array($menu))
+            {
+                if (empty($menu['menu_langs']))
+                {
+                    $lang = new \LbMenu\Model_Lang(array('language' => $language));
+                    return $lang->to_array();
+                }
+                else
+                {
+                    return current($menu['menu_langs']);
+                }
+            }
+            else
+            {
+                return (empty($menu->menu_langs)) ? new \LbMenu\Model_Lang(array('language' => $language)) : current($menu->menu_langs);
+            }
+        } 
+
+        if (is_array($menu))
+        {
+            // If langs not loaded
+            if (!isset($menu['menu_langs']))
+            {
+                $langs = \LbMenu\Model_Lang::query()->where('id_menu', $menu['id'])->get();
+                foreach($langs as $k => $lang)
+                {
+                    $langs[$k] = $lang->to_array();
+                }
+                $menu['menu_langs'] = $langs;
+            }
+
+            // Search for menu lang
+            foreach((array)$menu['menu_langs'] as $menuLang)
+            {
+                if ($menuLang['language'] == $language) return $menuLang;
+            }
+        }
+        else
+        {
+            // Search for menu lang
+            foreach((array)$menu->menu_langs as $menuLang)
+            {
+                if ($menuLang->language == $language) return $menuLang;
+            }
+        }
+
+        if (is_array($menu))
+        {
+            // Not found, forge new MenuLang
+            $lang = new \LbMenu\Model_Lang(array('language' => $language));
+            return $lang->to_array();
+        }
+        else
+        {
+            // Not found, forge new MenuLang
+            return new \LbMenu\Model_Lang(array('language' => $language));
+        }
+    }
+
 }

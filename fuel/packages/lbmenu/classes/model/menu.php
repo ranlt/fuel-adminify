@@ -123,27 +123,4 @@ class Model_Menu extends \Orm\Model_Nestedset
             $form->field('theme')->set_value($themeFallback);
         }
     }    
-
-
-    public function getMenuLang($language = false, $forceCurrent = false)
-    {
-        // Get default language
-        $language == false and $language = \Config::get('language');
-
-        // Return the current menu lang
-        if ($forceCurrent)
-        {
-            return (empty($this->menu_langs)) ? new \LbMenu\Model_Lang(array('language' => $language)) : current($this->menu_langs);
-        } 
-
-        // Search for menu lang
-        foreach((array)$this->menu_langs as $menuLang)
-        {
-            if ($menuLang->language == $language) return $menuLang;
-        }
-
-        // Not found, forge new MenuLang
-        return new \LbMenu\Model_Lang(array('language' => $language));
-    }
-
 }

@@ -127,7 +127,7 @@ class Controller_Installer extends \Controller {
             if ($val->run())
             {
                 //get environment specific database config
-                \Config::load(\FueL::$env.'/db', 'database', true);
+                \Config::load(\Fuel::$env.'/db', 'database', true);
                 
                 //set the database information
                 \Config::set('database.default.connection.dsn', 'mysql:host='.\Input::post('db_host').';dbname='.\Input::post('db_name'));
@@ -135,14 +135,13 @@ class Controller_Installer extends \Controller {
                 \Config::set('database.default.connection.password', \Input::post('db_password'));
                 
                 // save the database config
-                \Config::save(\FueL::$env.'/db', 'database');
+                \Config::save(\Fuel::$env.'/db', 'database');
 
-                /*
-                //Currently we can't set the token_salt in the app/config/config.php
-                $config = \Config::load('config', 'config');
-                \Config::set('config.security.token_salt',\Security::generate_token());
-                \Config::load('config', 'config');
-                */
+                
+                \Config::load(\Fuel::$env.'/config', 'env_config', true);
+                \Config::set('env_config.security.token_salt',\Security::generate_token());
+                \Config::save(\Fuel::$env.'/config', 'env_config');
+                
                 /*
                 \Config::load('crypt', 'crypt');
                 \Config::set('crypt.crypto_key',\Security::generate_token());

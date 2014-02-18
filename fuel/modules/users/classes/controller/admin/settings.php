@@ -13,7 +13,7 @@
 
 namespace Users;
 
-class Controller_Admin_Users_Settings extends \Controller_Base_Admin 
+class Controller_Admin_Settings extends \Controller_Base_Admin 
 {
 
     public function before() {
