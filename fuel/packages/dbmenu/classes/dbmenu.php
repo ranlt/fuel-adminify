@@ -1,5 +1,5 @@
 <?php
-namespace Menu;
+namespace DbMenu;
 
 /**
  * FuelPHP DbMenu Package
@@ -10,7 +10,7 @@ namespace Menu;
  * @subpackage DbMenu
  */
 
-class Menu {
+class DbMenu {
 
     /**
     * @var table name
@@ -27,16 +27,16 @@ class Menu {
 
     public static function _init()
     {
-            \Config::load('menu', true);
-            static::$table              = \Config::get('menu.db.table', 'menu');
-            static::$category_table     = \Config::get('menu.db.table_category', 'menu_categories');
-            static::$bootstrap          = \Config::get('menu.bootstrap.active');
-            static::$ul_class           = \Config::get('menu.bootstrap.ul_class');
-            static::$first_class        = \Config::get('menu.bootstrap.first_class');
-            static::$second_class       = \Config::get('menu.bootstrap.second_class');
-            static::$dropdown_icon      = \Config::get('menu.bootstrap.dropdown_icon');
-            static::$first_link_class   = \Config::get('menu.bootstrap.first_link_class');
-            static::$first_link_toggle  = \Config::get('menu.bootstrap.first_link_toggle');
+            \Config::load('dbmenu', true);
+            static::$table              = \Config::get('dbmenu.db.table', 'menu');
+            static::$category_table     = \Config::get('dbmenu.db.table_category', 'menu_categories');
+            static::$bootstrap          = \Config::get('dbmenu.bootstrap.active');
+            static::$ul_class           = \Config::get('dbmenu.bootstrap.ul_class');
+            static::$first_class        = \Config::get('dbmenu.bootstrap.first_class');
+            static::$second_class       = \Config::get('dbmenu.bootstrap.second_class');
+            static::$dropdown_icon      = \Config::get('dbmenu.bootstrap.dropdown_icon');
+            static::$first_link_class   = \Config::get('dbmenu.bootstrap.first_link_class');
+            static::$first_link_toggle  = \Config::get('dbmenu.bootstrap.first_link_toggle');
     }
 
     public static function build($menu_name = 'main', $bootstrap=null, $startlevel=0)

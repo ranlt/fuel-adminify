@@ -59,6 +59,10 @@ class Model_Menu extends \Orm\Model_Nestedset
             'events' => array('before_update'),
             'mysql_timestamp' => false,
         ),
+        'LbMenu\\Observer_Serialize' => array(
+            'events' => array('before_save', 'after_load'),
+            'source' => 'named_params',
+        ),
     );
     
     protected static $_table_name = 'menu_menu';

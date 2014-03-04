@@ -2,25 +2,18 @@
 
 namespace LbMenu;
 
-class Menu_Db extends \LbMenu\Menu
+class Menu_Array extends \LbMenu\Menu
 {
 	/**
-	 * Load the menu from id, slug or object
-	 * @param  mixed $menu 
-	 * @return Menu       
+	 * Load the menu from slug
+	 * @param  string $menu 
+	 * @return array      
 	 */
 	protected function load($menu = null)
 	{
+		\Config::load('menu', true);
 		$menu = $menu ? : $this->menu;
-
-		if (is_numeric($menu))
-		{
-			$menu = \LbMenu\Model_Menu::find($menu);
-		}
-		else if (is_string($menu))
-		{
-			$menu = \LbMenu\Model_Menu::query()->where('slug', $menu)->get_one();
-		}
+		$menu = \LbMenu\Helper_Array::find($menu);
 
 		if ($menu === null)
 		{
@@ -30,7 +23,6 @@ class Menu_Db extends \LbMenu\Menu
 		return $menu;
 	}
 
-
 	/**
 	 * Render the Menu
 	 * @param  array $theme
@@ -38,14 +30,9 @@ class Menu_Db extends \LbMenu\Menu
 	 */
 	public function render($theme = null)
 	{
-		$theme = \LbMenu\Helper_Menu::getTheme($this->menu);
-        $html = $this->buildMenu(current($this->menu->dump_tree()), $theme);
+		$theme = \LbMenu\Helper_Array::getTheme($this->menu);
+        $html = $this->buildMenu($this->menu, $theme);
         echo $html;
-	}
-
-	public function dump_tree() 
-	{
-		return $this->menu->dump_tree();
 	}
 
 	/**
@@ -66,7 +53,8 @@ class Menu_Db extends \LbMenu\Menu
 			{
 
                 // Construct Text
-                $menuLang = \LbMenu\Helper_Menu::getLang($child);
+                $menuLang = \LbMenu\Helper_Array::getLang($child);
+
                 $content = $this->themeReplaceInnerItem($child, $menuLang, $theme);
 
                 // Construct Item
@@ -98,7 +86,7 @@ class Menu_Db extends \LbMenu\Menu
 	 */
 	public function themeReplaceMenu($child, $menuLang, $theme, $output)
 	{
-		$depth = count(explode('/', $child['path']))-1;
+		$depth = \LbMenu\Helper_Array::getDepth($child)-1;
 		$arrKeys = array(
 			'{menu}',
 			'{depth}',
@@ -124,7 +112,7 @@ class Menu_Db extends \LbMenu\Menu
 	 */
 	public function themeReplaceSubmenu($child, $menuLang, $theme, $item, $submenu)
 	{
-		$depth = count(explode('/', $child['path']))-1;
+		$depth = \LbMenu\Helper_Array::getDepth($child)-1;
 
 		$arrKeys = array(
 			'{submenu}',
@@ -149,7 +137,7 @@ class Menu_Db extends \LbMenu\Menu
 	{
 		if (empty($menuLang['text'])) return '';
 
-		$depth = count(explode('/', $child['path']))-1;
+		$depth =\LbMenu\Helper_Array::getDepth($child)-1;
 
 		$arrKeys = array(
 			'{link}', 
@@ -183,7 +171,7 @@ class Menu_Db extends \LbMenu\Menu
 	 */
 	public function themeReplaceItem($child, $menuLang, $theme, $content)
 	{
-		$depth = count(explode('/', $child['path']))-1;
+		$depth = \LbMenu\Helper_Array::getDepth($child)-1;
 
 		$arrKeys = array(
 			'{item}',
@@ -221,18 +209,8 @@ class Menu_Db extends \LbMenu\Menu
 		$arrKeys = array();
 		$arrValues = array();
 
-		// If EAV not loaded
-		if (!isset($child['menu_attributes']))
-		{
-            $attributes = \LbMenu\Model_Attribute::query()->where('id_menu', $child['id'])->get();
-            foreach($attributes as $k => $attribute)
-            {
-                $attributes[$k] = $attribute->to_array();
-            }
-            $child['menu_attributes'] = $attributes;
-		}
+		$eavs = $child['eav'];
 
-		$eavs = $child['menu_attributes'];
 		!isset($theme['attributes']) and $theme['attributes'] = array();
 		foreach((array)$theme['attributes'] as $attribute)
 		{
@@ -240,10 +218,10 @@ class Menu_Db extends \LbMenu\Menu
 
 			// Get the value
 			$value = '';
-			foreach($eavs as $eav)
+			foreach($eavs as $k => $v)
 			{
-				if ($eav['key'] == $attribute['key']) {
-					$value = $eav['value'];
+				if ($k == $attribute['key']) {
+					$value = $v;
 					break;
 				}
 			}
@@ -337,4 +315,5 @@ class Menu_Db extends \LbMenu\Menu
 
 		return $has_active;
 	}
+
 }

@@ -17,6 +17,7 @@
         <?php echo \Theme::instance()->asset->css('bootstrap-mobile-navigation.css'); ?>
         <?php echo \Theme::instance()->asset->css('../font-awesome/css/font-awesome.min.css'); ?>
         <?php echo \Theme::instance()->asset->css('flatui-buttons.css'); ?>
+        <?php echo \Theme::instance()->asset->css('jquery.nestedsortable.css'); ?>
         <?php echo \Theme::instance()->asset->css('theme-adminify.css'); ?>
 
         <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->

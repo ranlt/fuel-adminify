@@ -8,10 +8,10 @@
  * @subpackage DbMenu
  */
 
-Autoloader::add_core_namespace('Menu');
+Autoloader::add_core_namespace('DbMenu');
 
 Autoloader::add_classes(array(
-	'Menu\\Menu'             => __DIR__.'/classes/menu.php',
+	'DbMenu\\DbMenu'             => __DIR__.'/classes/dbmenu.php',
 ));
 
 
