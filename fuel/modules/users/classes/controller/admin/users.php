@@ -47,13 +47,15 @@ class Controller_Admin_Users extends \Controller_Base_Admin
                                                          );
                         
         $data['pagination'] = $pagination->render();
-                
-        return \Theme::instance()
+        
+        $this->theme->get_partial('page_header', 'partials/page_header')->set('title', 'Manage Users');
+        return $this->theme
                 ->get_template()
-                ->set(  'title', 'Manage Users')
+                ->set('title', 'Manage Users')
                 ->set(  'content', 
                         \Theme::instance()->view('admin/users/index', $data)
-                    );
+                    );                
+        
 	}
  
 	public function action_create($id = null)

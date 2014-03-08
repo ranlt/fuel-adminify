@@ -13,11 +13,11 @@ This package is flexible, you can use Array driver or Db driver (with orm nested
 4. Create a menu
   * [Db](http://github.com/jhuriez/fuel-lbMenu-package/wiki/Create-menu---Db-Driver)
   * [Array](http://github.com/jhuriez/fuel-lbMenu-package/wiki/Create-menu---Array-Driver)
-5. Router
-6. EAV
-7. Custom Theme
-8. Helper
-9. Task
-10. Administration module
+5. [Router](https://github.com/jhuriez/fuel-lbMenu-package/wiki/Router)
+6. [EAV](https://github.com/jhuriez/fuel-lbMenu-package/wiki/EAV)
+7. [Custom Theme](https://github.com/jhuriez/fuel-lbMenu-package/wiki/Custom-Theme)
+8. [Helper](https://github.com/jhuriez/fuel-lbMenu-package/wiki/Helper)
+9. [Tasks](https://github.com/jhuriez/fuel-lbMenu-package/wiki/Tasks)
+10. [Administration module](https://github.com/jhuriez/fuel-lbMenu-package/wiki/Administration-module)
 11. [Features planned](http://github.com/jhuriez/fuel-lbMenu-package/wiki/Features-planned)
 12. Bug / Error

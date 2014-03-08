@@ -35,12 +35,6 @@ class Menu
 		return static::$_instances[$name];
 	}
 
-	public static function dump($name = 'default', $items = array())
-	{
-		return static::$_instances[$name];
-	}
-
-
 	/**
 	 * Return a specific instance, or the default instance (is created if necessary)
 	 *

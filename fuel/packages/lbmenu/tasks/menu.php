@@ -50,7 +50,7 @@ class Menu
      */
     public function create($text = '')
     {
-        \Config::load('lbmenu', true);
+        \Config::load('menu', true);
 
         if (empty($text))
         {
@@ -114,7 +114,7 @@ class Menu
      */
     public function update($id = '')
     {
-        \Config::load('lbmenu', true);
+        \Config::load('menu', true);
 
         if (empty($id))
         {

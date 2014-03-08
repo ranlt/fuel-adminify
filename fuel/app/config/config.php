@@ -274,9 +274,8 @@ return array(
 		 	'orm',
 		 	'email',
 		 	'warden',
-		 	'dbmenu',
 		 	'breadcrumb',
-		 	'lbmenu'
+		 	'lbMenu'
 		),
 
 		/**

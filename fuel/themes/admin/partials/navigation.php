@@ -13,7 +13,6 @@
   </div>
   <div class="collapse navbar-collapse">
     <ul class="nav navbar-nav navbar-right">
-      <?php echo \DbMenu::build('user'); ?>
     </ul>
   </div>
 </div>

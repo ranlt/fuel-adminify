@@ -1,310 +1,338 @@
 <?php
-/**
- * Part of Fuel Adminify.
- *
- * @package     fuel-adminify
- * @version     2.0
- * @author      Marcus Reinhardt - Pseudoagentur
- * @license     MIT License
- * @copyright   2014 Pseudoagentur
- * @link        http://www.pseudoagentur.de
- * @github      https://github.com/Pseudoagentur/fuel-adminify
- */
 
 namespace Menu;
 
 class Controller_Admin_Menu extends \Controller_Base_Admin
 {
 
-    public function before()
-    {
-        parent::before();
-
-        \Theme::instance()->set_partial('subnavigation', 'partials/subnavigation');
-/*        \Theme::instance()->set_partial('subnavigation', 'partials/subnavigation');
-
-        if(!\Warden::can(array('read'), 'users'))
+    public function before() {
+        if (\Input::is_ajax())
         {
-            \Messages::warning('Ups. You have not the permission to do this action.');
-            \Fuel\Core\Response::redirect('admin');
-        }     */
+            return parent::before();
+        }
+        else
+        {
+            parent::before();
+        }
+
+        // Load Config
+        \Config::load('menu', true);
+        
+        // Load language
+        \Lang::load('menu', true);
+
+        // Message class exist ?
+        //$this->use_message = class_exists('\Messages');
+
+        // Use Casset ?
+        //$this->use_casset = \Config::get('menu.module.use_casset');
+
+        // Set Media
+        //$this->setModuleMedia();
     }
 
+    /**
+     * List all menu
+     */
     public function action_index()
     {
 
-        $categories         = \Menu\Model_Categories::find('all');
-            
-        foreach ($categories as $category)
+        $id = $this->param('id');
+
+        if ($id == null)
         {
-            
-            $data['menues'][$category->id] = array(
-                                                    'catid' => $category->id, 
-                                                    'catname' => $category->catname, 
-                                                    'alias' => $category->alias
-                                                  );
-            
-            $data['menues'][$category->id]['menu'] = $this->action_getMenu($category->id, true);
-        }
-
-        return \Theme::instance()
-                ->get_template()
-                ->set(  'title', 'Manage Menues')
-                ->set(  'content', 
-                        \Theme::instance()->view('admin/menu/index', $data)
-                    );
-       
-
-    }
-	
-    public function action_getMenu($catid, $isAdmin=false, $parent=0, $level=0, $init=true, &$menu_entries=array())
-    {
-        
-        if($isAdmin == false)
-        {
-            if($init==true)
-            {
-                $menu_entries[0] = "none";
-            }
-
-            if($catid == null || $catid == false)
-            {
-                return $menu_entries;
-            }
-
-            $current_level = \Menu\Model_Menu::get_Menu($catid, $parent);
-
-            foreach($current_level as $entry) 
-            { 
-                $menu_entries[$entry['id']] = str_repeat('&nbsp;&nbsp;&nbsp;',$level).$entry['title'];
-                $this->action_getMenu($catid, $isAdmin, $entry['id'] , $level+1, false, $menu_entries); 
-            } 
-
-            return $menu_entries;
+            // In root menu
+            $this->data['menus'] = $menus = \LbMenu\Model_Menu::forge()->roots()->get();
+            $this->data['menuBreadcrumb'] = '';
+            $this->theme->get_partial('page_header', 'partials/page_header')->set('title', __('menu.title.manage_all'));
+            $this->theme->get_template()->set('title', __('menu.title.manage_all'));
         }
         else
         {
-            $current_level = \Menu\Model_Menu::get_Menu($catid, $parent);
-
-            foreach($current_level as $entry) 
-            { 
-
-                $menu_entries[] =  array(
-                                        'id'        => $entry['id'], 
-                                        'name'      => str_repeat('&nbsp;&nbsp;&nbsp;',$level).$entry['title'],
-                                        'link'      => $entry['link'],
-                                        'divider'   => $entry['divider'],
-                                        'position'  => $entry['position']
-                                        );
-                $this->action_getMenu($catid, $isAdmin, $entry['id'] , $level+1, false, $menu_entries); 
-                 
-            } 
-
-            return $menu_entries;
+            // In sub menu
+            $this->data['menuParent'] = $menuParent = \LbMenu\Model_Menu::find($id);
+            $this->data['menus'] = $menus = $menuParent->children()->get();
+            $menuParentLang = \LbMenu\Helper_Menu::getLang($menuParent);
+            $this->data['menuBreadcrumb'] = \Menu\Helper_Menu::generateBreadcrumb($menuParent);
+            $this->theme->get_partial('page_header', 'partials/page_header')->set('title', __('menu.title.manage', array('name' => $menuParentLang->text)));
+            $this->theme->get_template()->set('title', __('menu.title.manage', array('name' => $menuParentLang->text)));
         }
-    }
 
-    public function action_create($catid = null)
-    {
-        if (\Input::method() == 'POST')
+        // Count link and submenu
+        foreach((array)$menus as $k => $menu)
         {
-            $menu = Model_Menu::forge(array(
-                    'title'     => \Input::post('title'),
-                    'parent'    => \Input::post('parent'),
-                    'position'  => \Input::post('position'),
-                    'link'      => \Input::post('link'),
-                    'catid'     => \Input::post('catid'),
-                    'active'    => \Input::post('active', 0),
-                    'divider'   => \Input::post('divider', 0),
-                    'menuicon'  => \Input::post('menuicon', 'none')
-            ));
+            $nbLink = 0;
+            $nbSub = 0;
 
-            if ($menu && $menu->save())
+            $childs = $menu->children()->get();
+            foreach((array)$childs as $child)
             {
-                \Messages::success('Added Menu entry #'.$menu->id.'.');
-                \Response::redirect('admin/menu');
+                if ($child->has_children())
+                {
+                    $nbSub++;
+                }
+                else
+                {
+                    $nbLink++;
+                }
             }
 
-            else
-            {
-                \Messages::error('Could not add menu entry.');
-            }
+            $menus[$k]->nbLink = $nbLink;
+            $menus[$k]->nbSub = $nbSub;
         }
 
-
-        $all_categories_obj         = \Menu\Model_Categories::find('all');
-
-        foreach ($all_categories_obj as $i => $obj)
-        {
-            $all_categories_arr[$i] = $obj->to_array();
-        }
         
-        foreach ($all_categories_arr as $value) 
-        {
-            $all_categories[$value['id']] = $value['catname'];
-        }
 
-        $data['categories']  = $all_categories;
-        $data['parent_links']   = $this->action_getMenu(($catid == null) ? key($all_categories) : $catid);
-        
-        return \Theme::instance()
+        return $this->theme
                 ->get_template()
-                ->set(  'title', 'Create Menu')
                 ->set(  'content', 
-                        \Theme::instance()->view('admin/menu/create', $data)
-                    );
+                        \Theme::instance()->view('admin/index', $this->data, null, false)
+                    );     
 
-    }
-    
-    public function action_edit($id = null)
+        //$this->theme->set_partial('content', 'admin/index')->set($this->data, null, false);
+    }    
+
+    /**
+     * Delete a menu
+     */
+    public function action_delete()
     {
-        $menu                   = \Menu\Model_Menu::find_by_id($id);
-
-        if (\Input::method() == 'POST')
+        $menu = \LbMenu\Model_Menu::find($this->param('id'));
+        if (\LbMenu\Helper_Menu::delete($menu))
         {
-
-            $menu->title        = \Input::post('title');
-            $menu->parent       = \Input::post('parent');
-            $menu->position     = \Input::post('position');
-            $menu->link         = \Input::post('link');
-            $menu->catid        = \Input::post('catid');
-            $menu->active       = \Input::post('active');
-            $menu->divider      = \Input::post('divider');
-            $menu->menuicon     = \Input::post('menuicon', 'none');
-
-
-            if ($menu->save())
-            {
-                \Messages::success('Updated menu #' . $id);
-
-                \Response::redirect('admin/menu');
-            }
-
-            else
-            {
-                    \Messages::warning('Nothing updated.');
-            }
-        }
-
-        $all_categories_obj     = \Menu\Model_Categories::find('all');
-        foreach ($all_categories_obj as $i => $obj)
-        {
-            $all_categories_arr[$i] = $obj->to_array();
-        }
-
-        foreach ($all_categories_arr as $value) 
-        {
-            $all_categories[$value['id']] = $value['catname'];
-        }
-
-        $data['categories']     = $all_categories;
-        $data['parent_links']   = $this->action_getMenu($menu->catid);
-
-        $data['menu']           = $menu;
-
-        return \Theme::instance()
-                ->get_template()
-                ->set(  'title', 'Edit Menu')
-                ->set(  'content', 
-                        \Theme::instance()->view('admin/menu/edit', $data)
-                    );
-
-    }
-
-    public function action_delete($id = null)
-    {
-        $menu = \Menu\Model_Menu::find_by_id($id);
-
-        if ($menu && $menu->delete())
-        {
-            \Messages::success('Deleted menu entry #'.$id);
+            $this->use_message and \Messages::success(__('menu.message.deleted'));
         }
         else
         {
-            \Messages::error('Could not delete menu entry #'.$id);
+            $this->use_message and \Messages::error(__('menu.error'));
         }
 
-        \Response::redirect('admin/menu');
-
-    }
-    
-    public function action_create_category($catid = null)
-    {
-        if (\Input::method() == 'POST')
-        {
-            $category = \Menu\Model_Categories::forge(array(
-                    'catname'   => \Input::post('catname'),
-                    'alias'     => \Input::post('alias')
-            ));
-
-            if ($category && $category->save())
-            {
-                \Messages::success('Added Menu category entry #'.$category->id.'.');
-                \Response::redirect('admin/menu');
-            }
-
-            else
-            {
-                \Messages::error('Could not add menu category entry.');
-            }
-        }
-
-        return \Theme::instance()
-                ->get_template()
-                ->set(  'title', 'Create Menu Category')
-                ->set(  'content', 
-                        \Theme::instance()->view('admin/menu/create_category')
-                    );
-
-    }
-    
-    public function action_edit_category($id = null)
-    {
-        $category = \Menu\Model_Categories::find_by_id($id);
-
-        if (\Input::method() == 'POST')
-        {
-
-            $category->catname      = \Input::post('catname');
-            $category->alias        = \Input::post('alias');
-
-            if ($category->save())
-            {
-                \Messages::success('Updated category #' . $id);    
-                \Response::redirect('admin/menu');
-            }
-
-            else
-            {
-                \Messages::warning( 'Nothing updated.');
-            }
-        }
-        $data['category'] = $category;
-
-        return \Theme::instance()
-                ->get_template()
-                ->set(  'title', 'Edit Menu Category')
-                ->set(  'content', 
-                        \Theme::instance()->view('admin/menu/edit_category', $data)
-                    );
-
+        \Response::redirect_back(\Router::get('menu_backend_menu'));
     }
 
-    public function action_delete_category($id = null)
+    /**
+     * Add or edit a menu
+     */
+    public function action_add()
     {
-        $menu = \Menu\Model_Categories::find_by_id($id);
+        // Get id menu and id parent if exist
+        $id       = $this->param('id');
+        $parentId = $this->param('parent');
 
-        if ($menu && $menu->delete())
+        // Set some data to view
+        $this->data['parent_id'] = ($parentId !== null) ? $parentId : 'none';
+        $this->data['isUpdate']  = $isUpdate = ($id !== null) ? true : false;
+        
+        // Get languages
+        $this->data['language'] = $language = \Config::get('language');
+
+        // Forge Menu fieldset
+        $form = \Fieldset::forge('menuForm', array('form_attributes' => array('class' => 'form-horizontal')));
+        $form->add_model('LbMenu\\Model_Menu');
+        $form->add('add', '', array('type' => 'submit', 'value' => ($isUpdate) ? __('menu.edit')
+                        : __('menu.add'), 'class' => 'btn btn-primary'));
+
+        // Get menu object
+        $this->data['menu'] = $menu = ($isUpdate) ? \LbMenu\Model_Menu::find($id) : new \LbMenu\Model_Menu();
+        $form->populate($menu);
+
+        // Forge MenuLang fieldset
+        $formLang = \Fieldset::forge('menuFormLang');
+        $formLang->add_model('LbMenu\\Model_Lang');
+
+        // Get menuLang object
+        $this->data['menuLang'] = $menuLang = \LbMenu\Helper_Menu::getLang($menu, $language);
+        $formLang->populate($menuLang);
+
+        // Set params route
+        $params = $menu->named_params;
+        $this->data['params'] = array();
+        foreach((array)$params as $name => $value)
         {
-            \Messages::success('Deleted menu category entry #'.$id);
+            $this->data['params'][] = array('name' => $name, 'value' => $value);
         }
 
+        // Set EAV
+        $eavArr = \Menu\Helper_Menu::getEav($menu, false, $isUpdate, $parentId);
+        $this->data['eav'] = $eavArr['eav'];
+        $this->data['themeName'] = $eavArr['theme_name'];
+
+        // Page title
+        if ($isUpdate)
+        {
+            //$this->theme->get_template()->set('pageTitle', __('menu.title.edit_menu', array('name' => $menuLang->text)));
+            $this->theme->get_partial('page_header', 'partials/page_header')->set('title', __('menu.title.edit_menu', array('name' => $menuLang->text)));
+            $this->theme->get_template()->set('title', __('menu.title.edit_menu', array('name' => $menuLang->text)));
+
+            // If menu has parent
+            if ($menu->is_child())
+            {
+                $parentMenu = $menu->parent()->get_one();
+                $this->data['parent_id'] = $parentId = $parentMenu->id;
+            }
+        }
         else
         {
-            \Messages::error('error','Could not delete menu category entry #'.$id);
+            //$this->theme->get_template()->set('pageTitle', __('menu.title.add_menu'));
+            $this->theme->get_partial('page_header', 'partials/page_header')->set('title', __('menu.title.add_menu'));
+            $this->theme->get_template()->set('title', __('menu.title.add_menu'));
         }
 
-        \Response::redirect('admin/menu');
+        // Form process
+        if (\Input::post('add'))
+        {
+            // validate the input
+            $form->validation()->run();
+            $formLang->validation()->run();
 
+            // if validated, create the object
+            if (!$form->validation()->error() && !$formLang->validation()->error())
+            {
+                // Get params
+                $params = array();
+                foreach((array)\Input::post('params') as $param)
+                {
+                    $params[$param['name']] = $param['value'];
+                }
+
+                // Parent Id logic
+                if ($parentId != 'none' && \Input::post('activeNode') !== null && \Input::post('activeNode') != 'none' && \Input::post('activeNode'))
+                {
+                    // If not change parent
+                    if ($isUpdate === false || \Input::post('activeNode') != $menu->parent()->get_one()->id)
+                    {
+                        $parentId = \Input::post('activeNode');
+                        $changeParentId = \Input::post('activeNode');
+                    }
+                    else
+                    {
+                        $changeParentId = false;
+                    }
+                }
+                else
+                {
+                    $changeParentId = false;
+                }
+
+                // Set params for save the menu
+                $params = array(
+                    'slug' => \Inflector::friendly_title($form->validated('slug')),
+                    'link' => $form->validated('link'),
+                    'is_blank' => $form->validated('is_blank'),
+                    'theme' => $form->validated('theme'),
+                    'use_router' => $form->validated('use_router'),
+                    'named_params' => $params,
+                    'text' => $formLang->validated('text'),
+                    'title' => $formLang->validated('title'),
+                    'small_desc' => $formLang->validated('small_desc'),
+                    'language' => $formLang->validated('language'),
+                    'eav' => (\Input::post('eav')) ? : array(),
+                    'parent_id' => $changeParentId,
+                );
+                
+                // Save
+                $saveArr = \LbMenu\Helper_Menu::manage($menu, $params, true);
+                if ($saveArr['response'])
+                {
+                    if ($isUpdate)
+                        $this->use_message and \Messages::success(__('menu.message.edited'));
+                    else
+                        $this->use_message and \Messages::success(__('menu.message.added'));
+
+                    $redirectLink = ($parentId == 'none' || !$parentId) ? \Router::get('menu_backend_menu') : 
+                                                                          \Router::get('menu_backend_submenu', array('id' => $parentId));
+                    \Response::redirect_back($redirectLink);
+                } else
+                {
+                    $this->use_message and \Messages::error(__('menu.error'));
+                }
+            }
+            else
+            {
+                foreach ($form->validation()->error() as $error)
+                {
+                    $this->use_message and \Messages::error($error);
+                }
+            }
+        }
+        $form->repopulate();
+        $formLang->repopulate();
+
+        $this->data['form'] = $form;
+        $this->data['formLang'] = $formLang;
+
+        return $this->theme
+                ->get_template()
+                ->set(  'content', 
+                        \Theme::instance()->view('admin/add', $this->data, null, false)
+                    );  
+        //$this->theme->set_partial('content', 'backend/add')->set($this->data, null, false);
     }
+
+    /**
+     * REST API for menu
+     */
+    public function action_api($context = '')
+    {
+        \Package::load('lbMenu');
+        switch ($context)
+        {
+            /**
+             * Show menus in Dynatree
+             */
+            case 'show_menus':
+                $json = \Menu\Helper_Menu::getMenuTree(\Input::get('idSelect'), \Input::get('show_none'), \Input::get('idMenu'));
+                return $this->response($json);
+                break;
+            /**
+             * Get the menu language data
+             */
+            case 'get_menu_lang':
+                $idMenu = \Input::get('id');
+
+                $menu = \LbMenu\Model_Menu::find($idMenu);
+                $menu or $menu = new \LbMenu\Model_Menu();
+                
+                $lang = \Input::get('lang');
+
+                $menuLang = \LbMenu\Helper_Menu::getLang($menu, $lang);
+                return $this->response(array('data' => $menuLang->to_array(), 'success' => true));
+
+                break;
+            /**
+             * Move menu position
+             */
+            case 'move_menu':
+                $menuCurrent = \LbMenu\Model_Menu::find(\Input::get('idCurrent'));
+                
+                if (\Input::get('idPrev') !== null)
+                {
+                    $menuPrev = \LbMenu\Model_Menu::find(\Input::get('idPrev'));
+                    $menuCurrent->sibling($menuPrev)->save();
+                }
+                else if (\Input::get('idNext') !== null)
+                {
+                    $menuNext = \LbMenu\Model_Menu::find(\Input::get('idNext'));
+                    $menuCurrent->previous_sibling($menuNext)->save();
+                }
+                
+                $json = array('message' => 'success');
+                return $this->response($json);
+                break;
+            /**
+             * Get EAV of a menu
+             */
+            case 'get_eav':
+                $theme = \Input::get('theme');
+                $isUpdate = \Input::get('isUpdate');
+                $idMenu = \Input::get('idMenu');
+                $idRoot = \Input::get('idRoot');
+
+                $eav = \Menu\Helper_Menu::getEav($idMenu, $theme, $isUpdate, false, $idRoot);
+
+                return $this->response(array('data' => $eav['eav'], 'theme_name' => $eav['theme_name'], 'success' => true));
+            break;
+        }
+    }
+
 }

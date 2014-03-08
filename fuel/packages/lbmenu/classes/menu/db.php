@@ -9,7 +9,7 @@ class Menu_Db extends \LbMenu\Menu
 	 * @param  mixed $menu 
 	 * @return Menu       
 	 */
-	protected function load($menu = null)
+	protected function load($menu = null, $strict = false)
 	{
 		$menu = $menu ? : $this->menu;
 
@@ -24,12 +24,28 @@ class Menu_Db extends \LbMenu\Menu
 
 		if ($menu === null)
 		{
-			throw new \Exception('Menu '.$menu.' not found');
+			if ($strict)
+			{
+				throw new \Exception('Menu '.$menu.' not found');
+			} 
+			return false;
 		}
 
 		return $menu;
 	}
 
+    /**
+     * Dump the menu as array with language data
+     * @return array            
+     */
+    public function dump()
+    {
+    	if ($this->menu === false) return array();
+
+        $menuArr = current($this->menu->dump_tree());
+        $menuArr = \LbMenu\Helper_Menu::recursiveGetLang($menuArr);
+        return $menuArr;
+    }
 
 	/**
 	 * Render the Menu
@@ -38,14 +54,12 @@ class Menu_Db extends \LbMenu\Menu
 	 */
 	public function render($theme = null)
 	{
-		$theme = \LbMenu\Helper_Menu::getTheme($this->menu);
-        $html = $this->buildMenu(current($this->menu->dump_tree()), $theme);
-        echo $html;
-	}
+		if ($this->menu === false) return '';
 
-	public function dump_tree() 
-	{
-		return $this->menu->dump_tree();
+		$theme = \LbMenu\Helper_Menu::getTheme($this->menu);
+		$this->dump_tree = current($this->menu->dump_tree());
+        $html = $this->buildMenu($this->dump_tree, $theme);
+        echo $html;
 	}
 
 	/**
@@ -55,10 +69,10 @@ class Menu_Db extends \LbMenu\Menu
 	 * @param  boolean $main  
 	 * @return string         
 	 */
-	public function buildMenu($menu, $theme, $main = true)
+	public function buildMenu($menu, $theme, $main = true, $depth = 0)
 	{
+		$depth++;
 		$output = "";
-
 		if (!empty($menu['children']))
 		{
 			$children = $menu['children'];
@@ -67,16 +81,16 @@ class Menu_Db extends \LbMenu\Menu
 
                 // Construct Text
                 $menuLang = \LbMenu\Helper_Menu::getLang($child);
-                $content = $this->themeReplaceInnerItem($child, $menuLang, $theme);
+                $content = $this->themeReplaceInnerItem($child, $menuLang, $theme, $depth);
 
                 // Construct Item
-            	$item = $this->themeReplaceItem($child, $menuLang, $theme, $content);
+            	$item = $this->themeReplaceItem($child, $menuLang, $theme, $content, $depth);
 
                 // If contains submenu
-                $submenu = (!empty($child['children'])) ? $this->buildMenu($child, $theme, false) : '';
+                $submenu = (!empty($child['children'])) ? $this->buildMenu($child, $theme, false, $depth) : '';
 
                 // Construct Submenu
-            	$output .= $this->themeReplaceSubmenu($child, $menuLang, $theme, $item, $submenu);
+            	$output .= $this->themeReplaceSubmenu($child, $menuLang, $theme, $item, $submenu, $depth);
 			}
 		}
         else
@@ -85,7 +99,7 @@ class Menu_Db extends \LbMenu\Menu
         }
 
         // Show the menu
-		return $this->themeReplaceMenu($child, $menuLang, $theme, $output);
+		return $this->themeReplaceMenu($child, $menuLang, $theme, $output, $depth);
 	}
 
 	/**
@@ -96,9 +110,8 @@ class Menu_Db extends \LbMenu\Menu
 	 * @param  string $output   
 	 * @return string           
 	 */
-	public function themeReplaceMenu($child, $menuLang, $theme, $output)
+	public function themeReplaceMenu($child, $menuLang, $theme, $output, $depth)
 	{
-		$depth = count(explode('/', $child['path']))-1;
 		$arrKeys = array(
 			'{menu}',
 			'{depth}',
@@ -122,10 +135,8 @@ class Menu_Db extends \LbMenu\Menu
 	 * @param  string $submenu  
 	 * @return string           
 	 */
-	public function themeReplaceSubmenu($child, $menuLang, $theme, $item, $submenu)
+	public function themeReplaceSubmenu($child, $menuLang, $theme, $item, $submenu, $depth)
 	{
-		$depth = count(explode('/', $child['path']))-1;
-
 		$arrKeys = array(
 			'{submenu}',
 			'{depth}',
@@ -145,11 +156,11 @@ class Menu_Db extends \LbMenu\Menu
 	 * @param  array $theme    
 	 * @return string           
 	 */
-	public function themeReplaceInnerItem($child, $menuLang, $theme)
+	public function themeReplaceInnerItem($child, $menuLang, $theme, $depth)
 	{
 		if (empty($menuLang['text'])) return '';
 
-		$depth = count(explode('/', $child['path']))-1;
+		$depth = isset($child['path']) ? count(explode('/', $child['path']))-1 : 0;
 
 		$arrKeys = array(
 			'{link}', 
@@ -181,10 +192,8 @@ class Menu_Db extends \LbMenu\Menu
 	 * @param  string $content  
 	 * @return string           
 	 */
-	public function themeReplaceItem($child, $menuLang, $theme, $content)
+	public function themeReplaceItem($child, $menuLang, $theme, $content, $depth)
 	{
-		$depth = count(explode('/', $child['path']))-1;
-
 		$arrKeys = array(
 			'{item}',
 			'{link}', 
@@ -204,8 +213,9 @@ class Menu_Db extends \LbMenu\Menu
 		);
 
 		$key = ($depth >= 2) ? 'sub_menu_item' : 'menu_item';
+		$childrenKey = (!empty($child['children'])) ? '_with_children' : '';
 		$depthKey = '_depth-'.$depth;
- 		$key = $this->searchThemeKey($child['slug'], $key, $theme, $depthKey);
+ 		$key = $this->searchThemeKey($child['slug'], $key, $theme, $depthKey, $childrenKey);
 		return $this->themeReplaceEav($child, $theme, str_replace($arrKeys, $arrValues, $theme[$key]));
 	}
 
@@ -291,50 +301,80 @@ class Menu_Db extends \LbMenu\Menu
 	public function generateLink($child)
 	{
 		// Normal link
-		if (!$child['use_router']) return $child['link'];
-
+		if (!$child['use_router'])
+		{
+			$link = $child['link'];
+		} 
 		// Use router
-		$params = $child['named_params'];
-		$link = \Router::get($child['link'], $params);
+		else
+		{
+			$params = $child['named_params'];
+			$link = \Router::get($child['link'], $params);
+		}
+
+		$link = (substr($link, 0, 1) != '/') ? '/'.$link : $link;
 		return $link;		
 	}
 
 	/**
-	 * Set if the menu/link is active
+	 * Output if the menu/link is active
 	 * @param  array  $child 
 	 * @return boolean      
 	 */
 	public function isActive($child)
 	{
-		$link = str_replace(\Uri::base(), '', $this->generateLink($child));
-
-		if (!empty($link) && ('/'.\Uri::string() == $link || \Uri::string() == $link)) return 'active';
-
-		return $this->hasActive($child);
+		return ($this->checkActive($child)) ? (\Config::get('menu.output.active') ? : 'active') : $this->hasActive($child);
 	}
 
 	/**
-	 * Check if the menu has a active link in children
+	 * Output if the menu has a active link in children
 	 * @param  array  $child 
 	 * @return boolean        
 	 */
 	public function hasActive($child)
 	{
-		$has_active = '';
 		foreach((array)$child['children'] as $childTmp)
 		{
-			$link = str_replace(\Uri::base(), '', $this->generateLink($childTmp));
-			if (!empty($link) && ('/'.\Uri::string() == $link || \Uri::string() == $link))
-			{
-				return 'has_active';
-			}
-			else
-			{
-				$has_active = $this->hasActive($childTmp);
-				if (!empty($has_active)) return $has_active;
-			}
+			if ($this->checkActive($childTmp))
+				return \Config::get('menu.output.has_active') ? : 'has_active';
 		}
 
-		return $has_active;
+		return '';
 	}
+
+	/**
+	 * Check if the menu/link is active
+	 * @param  array $child 
+	 * @return boolean       
+	 */
+	public function checkActive($child)
+	{
+		$link = str_replace(\Uri::base(), '', $this->generateLink($child));
+		if (!empty($link)) 
+		{
+			$uriArr = explode('/', \Uri::string());
+
+			// Explore the uri segments
+			do {
+				$uri = '/'.implode('/', $uriArr);
+
+				// If it's the correct uri => output active
+				if ($uri == $link)
+					return true;
+
+				// Else search if the uri is in the menu
+				$searchArr = explode('.', \Arr::search($this->dump_tree, $uri));
+				// If it's, the menu is not active
+				if(array_pop($searchArr) == 'link')
+				{
+					return false;
+				}
+
+				array_pop($uriArr);
+			} while(!empty($uriArr));
+		}
+
+		return false; 
+	}
+
 }

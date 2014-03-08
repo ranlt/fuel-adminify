@@ -121,12 +121,14 @@ class Helper_Menu
                 }
                 $menu['menu_langs'] = $langs;
             }
-
             // Search for menu lang
             foreach((array)$menu['menu_langs'] as $menuLang)
             {
                 if ($menuLang['language'] == $language) return $menuLang;
             }
+
+            // Language not found, return the current
+            return array_shift($menu['menu_langs']);
         }
         else
         {
@@ -150,6 +152,30 @@ class Helper_Menu
         }
     }
 
+    public static function recursiveGetLang($menuArr)
+    {
+        // Get language data
+        $menuLang = self::getLang($menuArr);
+
+        // Unset useless data
+        unset($menuLang['created_at']);
+        unset($menuLang['updated_at']);
+        unset($menuLang['id']);
+        unset($menuLang['id_menu']);
+        unset($menuArr['menu_langs']);
+
+        // Merge lang
+        $menuArr = array_merge($menuArr, $menuLang);
+        
+        // Do the same for children
+        foreach((array)$menuArr['children'] as $k => $child)
+        {
+            $menuArr['children'][$k] = self::recursiveGetLang($child);
+        }
+
+        return $menuArr;
+    }
+
     /**
      * ALL helper functions for manage the Menu model
      */
@@ -171,11 +197,17 @@ class Helper_Menu
 
     public static function manage($menu, $data, $return_data = false)
     {
-        \Config::load('lbmenu', true);
+        \Config::load('menu', true);
         $isUpdate = ($menu->is_new()) ? false : true;
 
         // Set EAV
-        isset($data['eav']) and $menu->from_array($data['eav']);
+        if (isset($data['eav']))
+        {
+            foreach($data['eav'] as $attribute => $value)
+            {
+                $menu->{$attribute} = $value;
+            }
+        } 
 
         // Set language
         $data['language'] = (isset($data['language']) ? $data['language'] : ($isUpdate ? false : \Config::get('language')));
@@ -244,17 +276,54 @@ class Helper_Menu
             }
         }
 
+        // Slug must be unique
+        if ($response = $menu->save())
+        {
+            $countDoublon = self::getOccurence($menu->id, 'menu_menu', 'slug', $menu->slug);
+            if ($countDoublon > 1)
+            {
+                $menu->slug .= '-'.($countDoublon);
+                $menu->save();
+            }
+        }
+
         if ($return_data)
         {
             return array(
-                'response' => $menu->save(),
+                'response' => $response,
                 'menu' => $menu,
                 'menuLang' => $menuLang,
             );
         }
         else
         {
-            return $menu->save();
+            return $response;
+        }
+    }
+
+
+    /**
+     * Get occurence in table
+     * @param  int  $id       Identifiant de l'objet
+     * @param  string  $table    Nom de la table
+     * @param  string  $attribute Nom de l'attribut
+     * @param  string  $value    La valeur unique
+     * @param  integer $count    le nombre d'occurence
+     * @return int            Retourne le nombre d'occurence
+     */
+    public static function getOccurence($id, $table, $attribute, $value, $count=0)
+    {
+        $whereAttribute = ($count > 1) ? $value.'-'.$count : $value;
+        $res = \DB::select('*')->from($table)->where($attribute, '=', $whereAttribute)->where('id', '!=', $id)->execute()->as_array();
+        
+        if (!empty($res))
+        {
+            $count++;
+            return self::getOccurence($id, $table, $attribute, $value, $count);
+        }
+        else
+        {
+            return $count;
         }
     }
 
